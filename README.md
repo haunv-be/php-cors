@@ -2,8 +2,8 @@
 Enlightener PHP CORS is a small library supported to prevent attacks from a cross-origin request. I spent a lot of time researching the mechanism, as well as how it works, and summarized each line by comments. This library is for the Laravel framework and is also possible for the Symfony framework and the PHP language, but you must modify it if want to use it.
 These documents I referenced and listed here:
 
-MDN Web Docs: [`CORS`](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
-Github: [`asm89/stack-cors`](https://github.com/asm89/stack-cors)
+* MDN Web Docs: [`CORS`](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
+* Github: [`asm89/stack-cors`](https://github.com/asm89/stack-cors)
 
 ## Installation with Composer
 ```
