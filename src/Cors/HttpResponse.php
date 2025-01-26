@@ -106,6 +106,66 @@ class HttpResponse
     }
 
     /**
+     * Set the response "access-control-allow-origin" header with the given value.
+     */
+    public function setAccessControlAllowOrigin(string $value): void
+    {
+        $this->setHeader(
+            self::ACCESS_CONTROL_ALLOW_ORIGIN, $value
+        );
+    }
+
+    /**
+     * Set the response "access-control-allow-headers" header with the given value.
+     */
+    public function setAccessControlAllowHeaders(string $value): void
+    {
+        $this->setHeader(
+            self::ACCESS_CONTROL_ALLOW_HEADERS, $value
+        );
+    }
+
+    /**
+     * Set the response "access-control-allow-methods" header with the given value.
+     */
+    public function setAccessControlAllowMethods(string $value): void
+    {
+        $this->setHeader(
+            self::ACCESS_CONTROL_ALLOW_METHODS, $value
+        );
+    }
+
+    /**
+     * Set the response "access-control-allow-credentials" header with the given value.
+     */
+    public function setAccessControlAllowCredentials(string $value): void
+    {
+        $this->setHeader(
+            self::ACCESS_CONTROL_ALLOW_CREDENTIALS, $value
+        );
+    }
+
+    /**
+     * Set the response "access-control-expose-headers" header with the given value.
+     */
+    public function setAccessControlExposeHeaders(string $value): void
+    {
+        $this->setHeader(
+            self::ACCESS_CONTROL_EXPOSE_HEADERS, $value
+        );
+    }
+
+    /**
+     * Set the response "access-control-max-age" header with the given value.
+     */
+    public function setAccessControlMaxAge(int $value): void
+    {
+        $this->setHeader(
+            self::ACCESS_CONTROL_MAX_AGE, $value
+        );
+    }
+
+    /**
      * Dynamically retrieve attributes on the response decorator instance.
      */
     public function __get(string $key): mixed
