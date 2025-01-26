@@ -23,9 +23,9 @@ class Utils
     {
         $array = [];
 
-        $strings = explode($delimiter, $string);
+        $string = explode($delimiter, $string);
 
-        foreach ($strings as $value) {
+        foreach ($string as $value) {
             $value = trim($value);
 
             if (empty($value)) {
@@ -41,14 +41,14 @@ class Utils
     /**
      * Determine if the given string contains the given value.
      */
-    public static function strContains(string $string, array|string $value): bool
+    public static function strContains(array|string $string, string $value): bool
     {
-        $strings = static::arrayWrap($string);
+        $string = static::arrayWrap($string);
 
-        $values = static::arrayWrap($value);
+        $value = static::arrayWrap($value);
 
-        foreach ($values as $as) {
-            if (! in_array($as, $strings)) {
+        foreach ($value as $as) {
+            if (! in_array($as, $string)) {
                 return false;
             }
         }
@@ -59,7 +59,7 @@ class Utils
     /**
      * Determine if the given string does not contain the given value.
      */
-    public static function strNotContains(string $string, array|string $value): bool
+    public static function strNotContains(array|string $string, string $value): bool
     {
         return ! static::strContains($string, $value);
     }
