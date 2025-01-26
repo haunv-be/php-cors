@@ -88,7 +88,7 @@ class HttpRequest
     }
 
     /**
-     * Get the "headers" header value from the preflight request.
+     * Get the "access-control-request-headers" header value from the preflight request.
      */
     public function accessControlRequestHeaders(): ?string
     {
@@ -98,7 +98,7 @@ class HttpRequest
     }
 
     /**
-     * Get the "method" header value from the preflight request.
+     * Get the "assess-control-request-method" header value from the preflight request.
      */
     public function accessControlRequestMethod(): ?string
     {
