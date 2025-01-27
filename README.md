@@ -16,21 +16,24 @@ composer require enlightener/php-cors
 | `allowedOrigins`    | Origins are allowed so that the server side can share a resource.            | `[*]`         |
 | `allowedMethods`    | Methods allowed when accessing a resource.                                   | `[*]`         |
 | `allowedHeaders`    | Headers that can be used during the actual request.                          | `[*]`         |
-| `allowedCredentials`| Credentials are allowed such as cookies, client certificates, and authentication headers. | `false` |
-| `exposedHeaders`    | Headers are exposed for the browser side. | `[]` |
-| `maxAge`            | The duration in seconds that the results of a `preflight` request such as<br>`Access-Control-Allow-Methods`, `Access-Control-Allow-Headers` can cached. | `0` |
+| `allowedCredentials`| Credentials are allowed such as `cookies`, `tls`, `client certificates`, or `authentication headers`. | `false` |
+| `exposedHeaders`    | Headers can be exposed to the browser side. | `[]` |
+| `maxAge`            | The duration in seconds that the results of headers in a `preflight` request such as <br>`access-control-allow: headers, methods` can cached. | `0` |
+
+> [!NOTE]
+> These options are strict, and this means that when you set an option that has the `[*]` value then it will be equivalent to the work you dynamically handled based on the incoming request. We will not disclose any values unnecessary for the browser side.
 
 ## Example
 
 ```php
 <?php
 
-namespace Enlightener\Http\Middleware;
+namespace Enlightener\Cors\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Enlightener\Http\CorsService;
+use Enlightener\Cors\CorsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 
@@ -42,16 +45,16 @@ class Cors
      * @var array
      */
     protected $options = [
-        'allowedOrigins' => ['*']     // or ['https://php.com', 'https://laravel.com', 'https://symfony.com'],
-        'allowedMethods' => ['*']     // or ['GET', 'HEAD', 'POST'],
-        'allowedHeaders' => ['*']     // or ['X-Header-One', 'X-Header-Two'],
-        'allowedCredentials' => false // or true,
-        'exposedHeaders' => []        // or ['X-Header-One', 'X-Header-Two'],
-        'maxAge' => 0                 // references https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Access-Control-Max-Age
+        'allowedOrigins' => ['*'],
+        'allowedMethods' => ['*'],
+        'allowedHeaders' => ['*'],
+        'allowedCredentials' => false,
+        'exposedHeaders' => [],
+        'maxAge' => 0
     ];
 
     /**
-     * Create a new the CORS middleware instance.
+     * Create a new CORS middleware instance.
      */
     public function __construct(array $options = [])
     {
@@ -76,12 +79,11 @@ class Cors
 
         // We'll determine if the incoming request is the "preflight" request sent by the browser.
         // If exactly then, we'll check some information relevant to headers such as
-        // "Origin", "Access-Control-Request-Headers", "Access-Control-Request-Method".
+        // "origin" and "access-control-request: headers, method".
         if ($corsService->isPreflightRequest()) {
             // If these header values are allowed on our server, then we return the response
             // to the browser with the "204" status code and headers force such as
-            // "Access-Control-Allow-Origin", "Access-Control-Allow-Headers", "Access-Control-Allow-Methods",
-            // and "Access-Control-Max-Age" option header if any.
+            // "access-control-allow: origin, headers, methods" and optional "max-age" if any.
             // This work purpose is for the browser to know this request is allowed,
             // and it'll send the "actual" request to our server to handle.
             return $corsService->setResponse(new Response)
@@ -97,14 +99,14 @@ class Cors
         $response = $next($request);
 
         $corsService->setResponse($response);
-        // Here, we'll handle the actual request sent by the browser as mentioned above.
-        // We'll apply the configurations that you set above to the response.
+        // Here, we'll handle the "actual" request sent by the browser as mentioned above.
+        // We'll apply the configurations such as "access-control-allow: origin, credentials"
+        // and "access-control-exposed-headers" onto the "actual" response.
+        // These are headers necessary and comply with the CORS policies.
         // After that, we'll send it to the browser side, and it has the responsibility
         // to handle our response to the client side.
         if ($corsService->isActualRequest()) {
             $corsService->configureAllowedOrigins()
-                        ->configureAllowedHeaders()
-                        ->configureAllowedMethods()
                         ->configureAllowedCredentials()
                         ->configureExposedHeaders();
         }
