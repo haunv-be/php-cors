@@ -63,7 +63,7 @@ class HttpRequest
     /**
      * Determine if the incoming request is a cross-origin request.
      */
-    protected function isCors(): bool
+    public function isCors(): bool
     {
         return $this->hasHeader(self::ORIGIN);
     }
@@ -121,7 +121,7 @@ class HttpRequest
      */
     public function __get(string $key): mixed
     {
-        if ($key === 'headers') {
+        if ($key == 'headers') {
             return $this->request->{$key};
         }
     }
