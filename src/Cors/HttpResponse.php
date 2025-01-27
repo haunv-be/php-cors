@@ -70,9 +70,105 @@ class HttpResponse
     }
 
     /**
+     * Get the response "access-control-allow-credentials" header value.
+     */
+    public function accessControlAllowCredentials(): ?string
+    {
+        return $this->header(self::ACCESS_CONTROL_ALLOW_CREDENTIALS);
+    }
+
+    /**
+     * Set the response "access-control-allow-credentials" header with the given value.
+     */
+    public function setAccessControlAllowCredentials(string $value): void
+    {
+        $this->setHeader(self::ACCESS_CONTROL_ALLOW_CREDENTIALS, $value);
+    }
+
+    /**
+     * Get the response "access-control-allow-headers" header value.
+     */
+    public function accessControlAllowHeaders(): ?string
+    {
+        return $this->header(self::ACCESS_CONTROL_ALLOW_HEADERS);
+    }
+
+    /**
+     * Set the response "access-control-allow-headers" header with the given value.
+     */
+    public function setAccessControlAllowHeaders(string $value): void
+    {
+        $this->setHeader(self::ACCESS_CONTROL_ALLOW_HEADERS, $value);
+    }
+
+    /**
+     * Get the response "access-control-allow-methods" header value.
+     */
+    public function accessControlAllowMethods(): ?string
+    {
+        return $this->header(self::ACCESS_CONTROL_ALLOW_METHODS);
+    }
+
+    /**
+     * Set the response "access-control-allow-methods" header with the given value.
+     */
+    public function setAccessControlAllowMethods(string $value): void
+    {
+        $this->setHeader(self::ACCESS_CONTROL_ALLOW_METHODS, $value);
+    }
+
+    /**
+     * Get the response "access-control-expose-headers" header value.
+     */
+    public function accessControlExposeHeaders(): ?string
+    {
+        return $this->header(self::ACCESS_CONTROL_EXPOSE_HEADERS);
+    }
+
+    /**
+     * Set the response "access-control-expose-headers" header with the given value.
+     */
+    public function setAccessControlExposeHeaders(string $value): void
+    {
+        $this->setHeader(self::ACCESS_CONTROL_EXPOSE_HEADERS, $value);
+    }
+
+    /**
+     * Set the response "access-control-max-age" header value.
+     */
+    public function accessControlMaxAge(): ?string
+    {
+        return $this->header(self::ACCESS_CONTROL_MAX_AGE);
+    }
+
+    /**
+     * Set the response "access-control-max-age" header with the given value.
+     */
+    public function setAccessControlMaxAge(int $value): void
+    {
+        $this->setHeader(self::ACCESS_CONTROL_MAX_AGE, strval($value));
+    }
+
+    /**
+     * Get the response "access-control-allow-origin" header value.
+     */
+    public function accessControlAllowOrigin(): ?string
+    {
+        return $this->header(self::ACCESS_CONTROL_ALLOW_ORIGIN);
+    }
+
+    /**
+     * Set the response "access-control-allow-origin" header with the given value.
+     */
+    public function setAccessControlAllowOrigin(string $value): void
+    {
+        $this->setHeader(self::ACCESS_CONTROL_ALLOW_ORIGIN, $value);
+    }
+
+    /**
      * Determine if the response has the "vary" header.
      */
-    protected function hasVaryHeader(): bool
+    public function hasVaryHeader(): bool
     {
         return $this->hasHeader(self::VARY);
     }
@@ -80,7 +176,7 @@ class HttpResponse
     /**
      * Determine if the response is without the "vary" header.
      */
-    protected function withoutVaryHeader(): bool
+    public function withoutVaryHeader(): bool
     {
         return ! $this->hasVaryHeader();
     }
@@ -88,7 +184,7 @@ class HttpResponse
     /**
      * Get the response "vary" header value.
      */
-    protected function varyHeader(): ?string
+    public function varyHeader(): ?string
     {
         return $this->header(self::VARY);
     }
@@ -106,71 +202,11 @@ class HttpResponse
     }
 
     /**
-     * Set the response "access-control-allow-origin" header with the given value.
-     */
-    public function setAccessControlAllowOrigin(string $value): void
-    {
-        $this->setHeader(
-            self::ACCESS_CONTROL_ALLOW_ORIGIN, $value
-        );
-    }
-
-    /**
-     * Set the response "access-control-allow-headers" header with the given value.
-     */
-    public function setAccessControlAllowHeaders(string $value): void
-    {
-        $this->setHeader(
-            self::ACCESS_CONTROL_ALLOW_HEADERS, $value
-        );
-    }
-
-    /**
-     * Set the response "access-control-allow-methods" header with the given value.
-     */
-    public function setAccessControlAllowMethods(string $value): void
-    {
-        $this->setHeader(
-            self::ACCESS_CONTROL_ALLOW_METHODS, $value
-        );
-    }
-
-    /**
-     * Set the response "access-control-allow-credentials" header with the given value.
-     */
-    public function setAccessControlAllowCredentials(string $value): void
-    {
-        $this->setHeader(
-            self::ACCESS_CONTROL_ALLOW_CREDENTIALS, $value
-        );
-    }
-
-    /**
-     * Set the response "access-control-expose-headers" header with the given value.
-     */
-    public function setAccessControlExposeHeaders(string $value): void
-    {
-        $this->setHeader(
-            self::ACCESS_CONTROL_EXPOSE_HEADERS, $value
-        );
-    }
-
-    /**
-     * Set the response "access-control-max-age" header with the given value.
-     */
-    public function setAccessControlMaxAge(int $value): void
-    {
-        $this->setHeader(
-            self::ACCESS_CONTROL_MAX_AGE, $value
-        );
-    }
-
-    /**
      * Dynamically retrieve attributes on the response decorator instance.
      */
     public function __get(string $key): mixed
     {
-        if ($key === 'headers') {
+        if ($key == 'headers') {
             return $this->response->{$key};
         }
     }
