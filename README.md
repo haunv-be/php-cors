@@ -18,7 +18,7 @@ composer require enlightener/php-cors
 | `allowedHeaders`    | Headers that can be used during the actual request.                          | `[*]`         |
 | `allowedCredentials`| Credentials are allowed such as `cookies`, `tls`, `client certificates`, or `authentication headers`. | `false` |
 | `exposedHeaders`    | Headers can be exposed to the browser side. | `[]` |
-| `maxAge`            | The duration in seconds that the results of headers in a `preflight` request such as <br>`access-control-allow: headers, methods` can cached. | `0` |
+| `maxAge`            | The duration in seconds that the results of headers in a `preflight` request such as `access-control-allow: headers, methods` can cached. | `0` |
 
 > [!NOTE]
 > These options are strict, and this means that when you set an option that has the `[*]` value then it will be equivalent to the work you dynamically handled based on the incoming request. We will not disclose any values unnecessary for the browser side.
