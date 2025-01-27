@@ -1,197 +1,128 @@
 <?php
 
-namespace Enlightener\Http;
+namespace Enlightener\Cors;
 
+use Enlightener\Cors\Utils;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Enlightener\Cors\HttpRequest;
 use Illuminate\Http\JsonResponse;
+use Enlightener\Cors\HttpResponse;
 use Illuminate\Http\RedirectResponse;
 
 class CorsService
 {
-    /**
-     * Wildcard value for requests without credentials.
-     */
-    public const WILDCARD = '*';
-
-    /**
-     * Headers attached the "preflight" request sent by the browser side.
-     */
-    public const ORIGIN = 'Origin';
-    public const ACCESS_CONTROL_REQUEST_HEADERS = 'Access-Control-Request-Headers';
-    public const ACCESS_CONTROL_REQUEST_METHOD = 'Access-Control-Request-Method';
-
-    /**
-     * Headers attached the "preflight" response sent by the server side
-     * before receiving the actual request. Force these headers must sent 234.
-     */
-    public const VARY = 'Vary';
-    public const ACCESS_CONTROL_ALLOW_ORIGIN = 'Access-Control-Allow-Origin';
-    public const ACCESS_CONTROL_ALLOW_HEADERS = 'Access-Control-Allow-Headers';
-    public const ACCESS_CONTROL_ALLOW_METHODS = 'Access-Control-Allow-Methods';
-    public const ACCESS_CONTROL_ALLOW_CREDENTIALS = 'Access-Control-Allow-Credentials';
-    public const ACCESS_CONTROL_EXPOSE_HEADERS = 'Access-Control-Expose-Headers';
-    public const ACCESS_CONTROL_MAX_AGE = 'Access-Control-Max-Age';
-
-    /**
-     * The current request instance.
-     *
-     * @var Request
-     */
-    protected $request;
-
-    /**
-     * The current response instance.
-     *
-     * @var Response|JsonResponse|RedirectResponse
-     */
-    protected $response;
-
-    /**
-     * Headers are exposed for the browser side.
-     *
-     * @var string
-     */
-    protected $exposedHeaders;
-
-    /**
-     * Headers that can be used during the actual request.
-     *
-     * @var bool|string
-     */
-    protected $allowedHeaders;
-
-    /**
-     * Methods allowed when accessing a resource.
-     *
-     * @var bool|string
-     */
-    protected $allowedMethods;
-
     /**
      * Origins are allowed so that the server side can share a resource.
      *
      * @var array|bool
      */
     protected $allowedOrigins;
+    
+    /**
+     * Headers that can be used during the actual request.
+     *
+     * @var array|bool
+     */
+    protected $allowedHeaders;
 
     /**
-     * Credentials are allowed such as cookies, client certificates, and authentication headers.
+     * Methods allowed when accessing a resource.
+     *
+     * @var array|bool
+     */
+    protected $allowedMethods;
+
+    /**
+     * Credentials are allowed such as "cookies", "tls", "client certificates", or "authentication headers".
      *
      * @var bool
      */
     protected $allowedCredentials = false;
 
     /**
-     * The duration in seconds that the results of a "preflight" request such as
-     * "Access-Control-Allow-Methods", "Access-Control-Allow-Headers" can cached.
+     * Headers can be exposed to the browser side.
+     *
+     * @var array
+     */
+    protected $exposedHeaders;
+
+    /**
+     * The duration in seconds that the results of headers in a "preflight" request
+     * such as "access-control-allow: headers, methods" can cached.
      *
      * @var int
      */
     protected $maxAge = 0;
 
     /**
-     * Get the current request instance.
+     * The request decorator instance.
+     *
+     * @var HttpRequest
      */
-    public function getRequest(): Request
+    protected $request;
+
+    /**
+     * The response decorator instance.
+     *
+     * @var HttpResponse
+     */
+    protected $response;
+
+    /**
+     * Get the request decorator instance.
+     */
+    public function request(): HttpRequest
     {
         return $this->request;
     }
 
     /**
-     * Set the current request instance.
+     * Get the current request instance.
+     */
+    public function getRequest(): Request
+    {
+        return $this->request->instance();
+    }
+
+    /**
+     * Create a new request decorator instance with the given current request.
      */
     public function setRequest(Request $request): self
     {
-        $this->request = $request;
+        $this->request = new HttpRequest($request);
 
         return $this;
     }
 
     /**
-     * Determine if the incoming request is an "options" method.
+     * Get the response decorator instance.
      */
-    public function isOptionsMethod(): bool
-    {
-        return $this->request->method() === 'OPTIONS';
-    }
-
-    /**
-     * Determine if the incoming request is a cross-origin request.
-     */
-    protected function isCorsRequest(): bool
-    {
-        return $this->request->headers->has(self::ORIGIN);
-    }
-
-    /**
-     * Determine if the incoming request is sent by the browser.
-     */
-    public function isPreflightRequest(): bool
-    {
-        return $this->isOptionsMethod() &&
-               $this->request->headers->has(self::ORIGIN) &&
-               $this->request->headers->has(self::ACCESS_CONTROL_REQUEST_METHOD) &&
-               $this->request->headers->has(self::ACCESS_CONTROL_REQUEST_HEADERS);
-    }
-
-    /**
-     * Get the "origin" header value from a cross-origin request.
-     */
-    protected function getRequestOrigin(): ?string
-    {
-        return $this->request->headers->get(self::ORIGIN);
-    }
-
-    /**
-     * Get the "headers" header value from a cross-origin request.
-     */
-    protected function getRequestHeaders(): ?string
-    {
-        return $this->request->headers->get(
-            self::ACCESS_CONTROL_REQUEST_HEADERS
-        );
-    }
-
-    /**
-     * Get the "method" header value from a cross-origin request.
-     */
-    protected function getRequestMethod(): ?string
-    {
-        return $this->request->headers->get(
-            self::ACCESS_CONTROL_REQUEST_METHOD
-        );
-    }
-
-    /**
-     * Determine if the incoming request is the same host.
-     */
-    protected function isSameHost(): bool
-    {
-        return is_null($this->getRequestOrigin()) ||
-               rtrim(env('APP_URL'), '/') === $this->request->getSchemeAndHttpHost();
-    }
-
-    /**
-     * Get the response instance.
-     */
-    public function getResponse(): Response|JsonResponse|RedirectResponse
+    public function response(): HttpResponse
     {
         return $this->response;
     }
 
     /**
-     * Set the response instance.
+     * Get the current response instance.
+     */
+    public function getResponse(): Response|JsonResponse|RedirectResponse
+    {
+        return $this->response->instance();
+    }
+
+    /**
+     * Create a new response decorator instance with the given current response.
      */
     public function setResponse(Response|JsonResponse|RedirectResponse $response): self
     {
-        $this->response = $response;
+        $this->response = new HttpResponse($response);
 
         return $this;
     }
 
     /**
-     * Determine if the allowed credentials value is supported.
+     * Determine if the "allowed credentials" value is supported.
      */
     protected function hasCredentials(): bool
     {
@@ -199,7 +130,7 @@ class CorsService
     }
 
     /**
-     * Determine if the allowed credentials value is not supported.
+     * Determine if the "allowed credentials" value is not supported.
      */
     protected function withoutCredentials(): bool
     {
@@ -207,7 +138,7 @@ class CorsService
     }
 
     /**
-     * Set the allowed credentials with the given value.
+     * Set "allowed credentials" with the given value.
      */
     public function setAllowedCredentials(bool $value): self
     {
@@ -217,12 +148,11 @@ class CorsService
     }
 
     /**
-     * Configure the allowed credentials value onto the response.
+     * Configure the "allowed credentials" value onto the response.
      */
     public function configureAllowedCredentials(): self
     {
-        $this->response->headers->set(
-            self::ACCESS_CONTROL_ALLOW_CREDENTIALS,
+        $this->response->setAccessControlAllowCredentials(
             $this->hasCredentials() ? 'true' : 'false'
         );
 
@@ -230,115 +160,154 @@ class CorsService
     }
 
     /**
-     * Get the allowed headers value.
+     * Get the "allowed headers" value.
      */
-    protected function allowedHeaders(): bool|string
+    public function allowedHeaders(): array|bool
     {
         return $this->allowedHeaders;
     }
 
     /**
-     * Set the allowed headers with the given value.
+     * Set "allowed headers" with the given value.
      */
     public function setAllowedHeaders(array|string $headers): self
     {
-        $headers = is_array($headers) ? $headers : [$headers];
+        $headers = Utils::arrayWrap($headers);
 
-        if (in_array(self::WILDCARD, $headers)) {
-            $this->allowedHeaders = true;
-        } else {
-            $this->allowedHeaders = strtolower(implode(', ', $headers));
-        }
+        $this->allowedHeaders = in_array('*', $headers) ? true : $headers;
 
         return $this;
     }
 
     /**
-     * Configure the allowed headers value onto the response.
+     * Determine if the "allowed headers" value is wildcard or contains
+     * the request "access-control-request-headers" header value.
+     */
+    protected function hasAllowedHeaders(): bool
+    {
+        return $this->allowedHeaders() === true ||
+               Utils::strContains($this->allowedHeaders(), $this->request->accessControlRequestHeaders());
+    }
+
+    /**
+     * Configure the "allowed headers" value onto the response.
      */
     public function configureAllowedHeaders(): self
     { 
-        // We'll determine if the allowed headers value is wildcard.
-        // Here, we unset the wildcard value because some browsers are not supported fully
-        // for this value if it attached with additional credentials.
-        // Simultaneously, we want to narrow the scope of this value based on the incoming request
-        // or more precisely is it like dynamically handled.
-        // The purpose of this work is we'll cover all cases relevant to if has credentials or not.
-        if ($this->allowedHeaders() === true) {
-            $value = $this->getRequestHeaders();
-
-            $this->setVaryHeader(
-                self::ACCESS_CONTROL_REQUEST_HEADERS
+        // First, we'll determine if the "allowed headers" value is wildcard.
+        // If exactly, we unset the wildcard value because some browsers are
+        // not supported fully for this value if it is attached with additional credentials.
+        // Simultaneously, we want to narrow the scope of this value based on
+        // the incoming request or more precisely is it like dynamically handled.
+        // The purpose of this work is we'll handle all cases relevant to credentials if has or not,
+        // and security for headers unnecessarily to avoid showing to the browser side.
+        if ($this->hasAllowedHeaders()) {
+            $this->response->setVaryHeader(
+                HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS
             );
-        } else {
-            $value = $this->allowedHeaders();
-        }
 
-        $this->response->headers->set(
-            self::ACCESS_CONTROL_ALLOW_HEADERS, $value
-        );
+            $this->response->setAccessControlAllowHeaders(
+                $this->request->accessControlRequestHeaders()
+            );
+        }
 
         return $this;
     }
 
     /**
-     * Get the allowed methods value.
+     * Get the "allowed methods" value.
      */
-    protected function allowedMethods(): bool|string
+    public function allowedMethods(): array|bool
     {
         return $this->allowedMethods;
     }
 
     /**
-     * Set the allowed methods with the given value.
+     * Set "allowed methods" with the given value.
      */
     public function setAllowedMethods(array|string $methods): self
     {
-        $methods = is_array($methods) ? $methods : [$methods];
+        $methods = Utils::arrayWrap($methods);
 
-        if (in_array(self::WILDCARD, $methods)) {
-            $this->allowedMethods = true;
-        } else {
-            $this->allowedMethods = strtoupper(implode(', ', $methods));
-        }
+        $this->allowedMethods = in_array('*', $methods) ? true : $methods;
 
         return $this;
     }
 
     /**
-     * Configure the allowed methods value onto the response.
+     * Determine if the "allowed methods" value is wildcard or contains
+     * the request "access-control-request-method" header value.
+     */
+    protected function hasAllowedMethods(): bool
+    {
+        return $this->allowedMethods() === true ||
+               Utils::strContains($this->allowedMethods(), $this->request->accessControlRequestMethod());
+    }
+
+    /**
+     * Configure the "allowed methods" value onto the response.
      */
     public function configureAllowedMethods(): self
     {
-        // For the same reason above, but here browsers are supported fully for this wildcard value.
-        // But we still want to narrow the scope of this value to avoid exceptions if any.
-        if ($this->allowedMethods() === true) {
-            $value = $this->getRequestMethod();
-
-            $this->setVaryHeader(
-                self::ACCESS_CONTROL_REQUEST_METHOD
+        if ($this->hasAllowedMethods()) {
+            $this->response->setVaryHeader(
+                HttpRequest::ACCESS_CONTROL_REQUEST_METHOD
             );
-        } else {
-            $value = $this->allowedMethods();
-        }
 
-        $this->response->headers->set(
-            self::ACCESS_CONTROL_ALLOW_METHODS, $value
-        );
+            $this->response->setAccessControlAllowMethods(
+                $this->request->accessControlRequestMethod()
+            );
+        }
 
         return $this;
     }
 
     /**
-     * Get the max age value.
+     * Get the exposed headers value.
      */
-    protected function maxAge(): int
+    public function exposedHeaders(): ?array
+    {
+        return $this->exposedHeaders;
+    }
+
+    /**
+     * Set "exposed headers" with the given value.
+     */
+    public function setExposedHeaders(array|string $headers): self
+    {
+        $headers = Utils::arrayWrap($headers);
+
+        if (! in_array('*', $headers) && ! empty($headers)) {
+            $this->exposedHeaders = $headers;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Configure the "exposed headers" value onto the response.
+     */
+    public function configureExposedHeaders(): self
+    {
+        if (! is_null($value = $this->exposedHeaders())) {
+            $this->response->setAccessControlExposeHeaders(
+                implode(',', $value)
+            );
+        }
+
+        return $this;
+    }
+
+    /**
+     * Get the "max age" value.
+     */
+    public function maxAge(): int
     {
         return $this->maxAge;
     }
 
     /**
-     * Set the max age with the given seconds.
+     * Set "max age" with the given seconds.
      */
     public function setMaxAge(int $seconds): self
     {
@@ -348,187 +317,59 @@ class CorsService
     }
 
     /**
-     * Configure the max age value onto the response.
+     * Configure the "max age" value onto the response.
      */
     public function configureMaxAge(): self
     {
-        $this->response->headers->set(
-            self::ACCESS_CONTROL_MAX_AGE, $this->maxAge()
-        );
-
-        return $this;
-    }
-
-    /**
-     * Get the exposed headers value.
-     */
-    protected function exposedHeaders(): string|null
-    {
-        return $this->exposedHeaders;
-    }
-
-    /**
-     * Set the exposed headers with the given value.
-     */
-    public function setExposedHeaders(array $headers): self
-    {
-        if (! in_array(self::WILDCARD, $headers) && ! empty($headers)) {
-            $this->exposedHeaders = implode(', ', $headers);
+        if ($this->maxAge() > 0) {
+            $this->response->setAccessControlMaxAge($this->maxAge());
         }
 
         return $this;
     }
 
     /**
-     * Configure the exposed headers value onto the response.
+     * Get the "allowed origins" value.
      */
-    public function configureExposedHeaders(): self
-    {
-        if (! is_null($this->exposedHeaders())) {
-            $this->response->headers->set(
-                self::ACCESS_CONTROL_EXPOSE_HEADERS, $value
-            );
-        }
-
-        return $this;
-    }
-
-    /**
-     * Determine if the response has the "vary" header value.
-     */
-    protected function hasVaryHeader(): bool
-    {
-        return $this->response->headers->has(self::VARY);
-    }
-
-    /**
-     * Determine if the response is without the "vary" header value.
-     */
-    public function withoutVaryHeader(): bool
-    {
-        return ! $this->hasVaryHeader();
-    }
-
-    /**
-     * Get the "vary" header value.
-     */
-    protected function varyHeader(): ?string
-    {
-        return $this->response->headers->get(self::VARY);
-    }
-
-    /**
-     * Set the "vary" header with the given value.
-     */
-    public function setVaryHeader(string $header): self
-    {
-        if ($this->withoutVaryHeader()) {
-            $this->response->headers->set(self::VARY, $header);
-        } elseif (! str_contains($this->varyHeader(), $header)) {
-            $this->response->headers->set(self::VARY, "{$this->varyHeader()}, {$header}");
-        }
-
-        return $this;
-    }
-
-    /**
-     * Get the allowed origins value.
-     */
-    protected function allowedOrigins(): array|bool
+    public function allowedOrigins(): array|bool
     {
         return $this->allowedOrigins;
     }
 
     /**
-     * Set the allowed origins with the given value.
+     * Set "allowed origins" with the given value.
      */
     public function setAllowedOrigins(array|string $origins): self
     {
-        $origins = is_array($origins) ? $origins : [$origins];
+        $origins = Utils::arrayWrap($origins);
 
-        if (in_array(self::WILDCARD, $origins)) {
-            $this->allowedOrigins = true;
-        } else {
-            $this->allowedOrigins = $origins;
-        }
+        $this->allowedOrigins = in_array('*', $origins) ? true : $origins;
 
         return $this;
     }
 
     /**
-     * Determine if allowed origins are the wildcard value.
+     * Determine if the "allowed origins" value is wildcard or contains
+     * the request "access-control-request-origin" header value.
      */
-    protected function hasWildcardOrigin(): bool
+    protected function hasAllowedOrigins(): bool
     {
-        return $this->allowedOrigins() === true;
+        return $this->allowedOrigins() === true ||
+               Utils::strContains($this->allowedOrigins(), $this->request->origin());
     }
 
     /**
-     * Determine if allowed origins are not the wildcard value.
-     */
-    protected function withoutWildcardOrigin(): bool
-    {
-        return ! $this->hasWildcardOrigin();
-    }
-
-    /**
-     * Determine if allowed origins are the single value.
-     */
-    protected function isSingleOrigin(): bool
-    {
-        return $this->withoutWildcardOrigin() && count($this->allowedOrigins()) === 1;
-    }
-
-    /**
-     * Determine if the "origin" header value from a cross-origin request is the allowed value.
-     */
-    protected function isOriginAllowed(): bool
-    {
-        return in_array($this->getRequestOrigin(), $this->allowedOrigins());
-    }
-
-    /**
-     * Determine if a cross-origin request is allowed.
-     */
-    protected function isCorsRequestAllowed(): bool
-    {
-        return $this->isCorsRequest() && ($this->hasWildcardOrigin() || $this->isOriginAllowed());
-    }
-
-    /**
-     * Determine if the incoming request is the actual request.
-     */
-    public function isActualRequest(): bool
-    {
-        return $this->isCorsRequestAllowed();
-    }
-
-    /**
-     * Configure the allowed origins value onto the response.
+     * Configure the "allowed origins" value onto the response.
      */
     public function configureAllowedOrigins(): self
     {
-        if ($this->isSingleOrigin()) {
-            $value = $this->allowedOrigins()[0];
+        if ($this->hasAllowedOrigins()) {
+            $this->response->setVaryHeader(HttpRequest::ORIGIN);
+
+            $this->response->setAccessControlAllowOrigin(
+                $this->request->origin()
+            );
         }
-
-        // Here, we'll determine if the allowed origins value has many.
-        // Imagine that you have an array that includes many values such as
-        // ['https://laravel.com', 'https://github.com/haunv-be', ...] or the wildcard value mentioned above.
-        // In this case, we must check the "Origin" header value from a cross-origin request
-        // to determine that the value is exact with the given allowed values.
-        elseif ($this->isCorsRequestAllowed()) {
-            $value = $this->getRequestOrigin();
-
-            // The "vary" header value has the purpose used to indicate to browsers that server
-            // responses can differ based on the value of the "Origin" request header.
-            // This header value is very useful to cache from the browser side.
-            $this->setVaryHeader(self::ORIGIN);
-        }
-
-        $this->response->headers->set(
-            self::ACCESS_CONTROL_ALLOW_ORIGIN, $value
-        );
 
         return $this;
     }
@@ -540,6 +381,10 @@ class CorsService
     {
         if ($method == 'setStatusCode') {
             $this->response->{$method}(...$parameters);
+        } elseif ($method == 'isActualRequest') {
+            return $this->request->isCors();
+        } elseif ($method == 'isPreflightRequest') {
+            return $this->request->isPreflight();
         }
 
         return $this;
