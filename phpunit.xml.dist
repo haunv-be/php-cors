@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+  backupGlobals="false"
+  backupStaticAttributes="false"
+  bootstrap="./Test/bootstrap.php"
+  colors="true"
+  convertDeprecationsToExceptions="true"
+  convertErrorsToExceptions="true"
+  convertNoticesToExceptions="true"
+  convertWarningsToExceptions="true"
+  processIsolation="false"
+  stopOnError="false"
+  stopOnFailure="false"
+  verbose="true"
+>
+<testsuites>
+  <testsuite name="Cors">
+    <directory suffix="CorsTest.php">./Test</directory>
+  </testsuite>
+
+  <testsuite name="CorsService">
+    <directory suffix="CorsServiceTest.php">./Test</directory>
+  </testsuite>
+</testsuites>
+<php>
+    <ini name="date.timezone" value="UTC" />
+    <ini name="intl.default_locale" value="C.UTF-8" />
+    <ini name="memory_limit" value="-1" />
+    <ini name="error_reporting" value="-1" />
+    <ini name="log_errors_max_len" value="0" />
+    <ini name="assert.exception" value="1" />
+    <ini name="xdebug.show_exception_trace" value="0" />
+</php>
+</phpunit>
