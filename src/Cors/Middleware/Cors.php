@@ -12,18 +12,18 @@ use Illuminate\Http\RedirectResponse;
 class Cors
 {
     /**
-     * Default options to setting for the CORS service instance.
+     * The cors service instance.
+     *
+     * @var ?CorsService
+     */
+    protected $corsService;
+
+    /**
+     * Options to set for the CORS service instance.
      *
      * @var array
      */
-    protected $options = [
-        'allowedOrigins' => ['*'],
-        'allowedMethods' => ['*'],
-        'allowedHeaders' => ['*'],
-        'allowedCredentials' => false,
-        'exposedHeaders' => [],
-        'maxAge' => 0
-    ];
+    protected $options;
 
     /**
      * Create a new CORS middleware instance.
@@ -31,7 +31,7 @@ class Cors
     public function __construct(array $options = [])
     {
         $this->options = array_merge(
-            $this->options, $options
+            $this->defaultOptions(), $options
         );
     }
 
@@ -40,14 +40,8 @@ class Cors
      */
     public function handle(Request $request, Closure $next): Response|JsonResponse|RedirectResponse
     {
-        $corsService = (new CorsService)
-                        ->setRequest($request)
-                        ->setAllowedOrigins($this->allowedOrigins)
-                        ->setAllowedMethods($this->allowedMethods)
-                        ->setAllowedHeaders($this->allowedHeaders)
-                        ->setAllowedCredentials($this->allowedCredentials)
-                        ->setExposedHeaders($this->exposedHeaders)
-                        ->setMaxAge($this->maxAge);
+        // Get cors service from the collection or create a new instance with the given options.
+        $corsService = $this->corsService()->setRequest($request);
 
         // We'll determine if the incoming request is the "preflight" request sent by the browser.
         // If exactly then, we'll check some information relevant to headers such as
@@ -87,7 +81,49 @@ class Cors
     }
 
     /**
-     * Dynamically retrieve attributes on the "options" property.
+     * Get the cors service instance.
+     */
+    protected function corsService(): CorsService
+    {
+        return $this->corsService ??
+                (new CorsService)
+                ->setAllowedOrigins($this->allowedOrigins)
+                ->setAllowedMethods($this->allowedMethods)
+                ->setAllowedHeaders($this->allowedHeaders)
+                ->setAllowedCredentials($this->allowedCredentials)
+                ->setExposedHeaders($this->exposedHeaders)
+                ->setMaxAge($this->maxAge);
+    }
+
+    /**
+     * Set cors service instance for middleware if any.
+     */
+    public function setCorsService(CorsService $corsService): self
+    {
+        $this->corsService = $corsService;
+
+        return $this;
+    }
+
+    /**
+     * Default options to set for the CORS service instance.
+     *
+     * @return array
+     */
+    protected function defaultOptions(): array
+    {
+        return [
+            'allowedOrigins' => ['*'],
+            'allowedMethods' => ['*'],
+            'allowedHeaders' => ['*'],
+            'allowedCredentials' => false,
+            'exposedHeaders' => [],
+            'maxAge' => 0
+        ];
+    }
+
+    /**
+     * Dynamically retrieve attributes of the "options" array.
      */
     public function __get(string $key): mixed
     {
