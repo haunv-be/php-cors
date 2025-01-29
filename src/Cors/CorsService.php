@@ -9,6 +9,7 @@ use Enlightener\Cors\HttpRequest;
 use Illuminate\Http\JsonResponse;
 use Enlightener\Cors\HttpResponse;
 use Illuminate\Http\RedirectResponse;
+use Enlightener\Cors\Exception\MethodNotAllowedException;
 
 class CorsService
 {
@@ -249,6 +250,12 @@ class CorsService
      */
     public function configureAllowedMethods(): self
     {
+        // Default, the browser side always allowed methods safe such as GET, HEAD, and POST.
+        // This means that the server side does not need to set the "access-control-allow-methods"
+        // header onto the preflight response. For example, you set allowed methods such as "PUT"
+        // and "PATCH" on the server side. But if the request is sent by these methods listed above
+        // then it'll still allowed. Some popular frameworks will prevent methods mismatch with routes.
+        // Here we want strict in this problem and an exception will be thrown if any.
         if ($this->hasAllowedMethods()) {
             $this->response->setVaryHeader(
                 HttpRequest::ACCESS_CONTROL_REQUEST_METHOD
@@ -257,9 +264,13 @@ class CorsService
             $this->response->setAccessControlAllowMethods(
                 $this->request->accessControlRequestMethod()
             );
+
+            return $this;
         }
 
-        return $this;
+        throw new MethodNotAllowedException(
+            "[{$this->request->accessControlRequestMethod()}] method not allowed."
+        );
     }
 
     /**
@@ -289,6 +300,10 @@ class CorsService
      */
     public function configureExposedHeaders(): self
     {
+        // For example, you set headers such as "X-Header-One" and "X-Header-Two".
+        // Then only these headers will be accessible in the browser side code.
+        // Other headers, such as "X-Header-Four" or "X-Header-Five"
+        // will not be exposed unless explicitly listed in this header.
         if (! is_null($value = $this->exposedHeaders())) {
             $this->response->setAccessControlExposeHeaders(
                 implode(',', $value)
