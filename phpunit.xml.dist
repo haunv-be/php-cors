@@ -21,6 +21,10 @@
   <testsuite name="CorsService">
     <directory suffix="CorsServiceTest.php">./Test</directory>
   </testsuite>
+
+  <testsuite name="CorsManager">
+    <directory suffix="CorsManagerTest.php">./Test</directory>
+  </testsuite>
 </testsuites>
 <php>
     <ini name="date.timezone" value="UTC" />
