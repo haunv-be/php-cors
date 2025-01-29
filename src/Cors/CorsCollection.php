@@ -7,7 +7,7 @@ use Enlightener\Cors\CorsService;
 class CorsCollection
 {
     /**
-     * An array cors service instances registered keyed by origin.
+     * An array of the cors services is keyed by origin.
      *
      * @var array
      */
