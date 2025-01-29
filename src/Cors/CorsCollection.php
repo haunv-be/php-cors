@@ -22,13 +22,13 @@ class CorsCollection
 
         $origins = is_array($origins) ? $origins : ['*'];
 
-        foreach ($origins as $origin) {
-            $this->items[$origin] = $corsService;
+        foreach ($origins as $key) {
+            $this->set($key, $corsService);
         }
     }
 
     /**
-     * Determine if the given key exists.
+     * Determine if the given origin exists.
      */
     public function has(string $key): bool
     {
@@ -36,17 +36,33 @@ class CorsCollection
     }
 
     /**
-     * Get the cors service instance with the given key.
+     * Determine if the given origin does not exist.
      */
-    public function get(string $key): ?CorsService
+    public function without(string $key): bool
     {
-        if ($this->has($key)) {
-            return $this->items[$key];
-        }
+        return ! $this->has($key);
     }
 
     /**
-     * Get cors service instance collection registered.
+     * Get an item in the collection with the given origin.
+     */
+    public function get(string $key): ?CorsService
+    {
+        return $this->items[$key];
+    }
+
+    /**
+     * Set an item onto the collection with the arguments.
+     */
+    public function set(string $key, CorsService $corsService): void
+    {
+        $this->unset($key);
+
+        $this->items[$key] = $corsService;
+    }
+
+    /**
+     * Get all items in the collection.
      */
     public function items(): array
     {
@@ -62,10 +78,44 @@ class CorsCollection
     }
 
     /**
+     * Remove an item in the collection with the given origin.
+     */
+    public function unset(string $key): void
+    {
+        if ($this->has($key)) {
+            unset($this->items[$key]);
+        }
+    }
+
+    /**
      * Get the last element in the collection.
      */
     public function last(): CorsService
     {
         return array_values($this->items())[$this->count() - 1];
+    }
+
+    /**
+     * Determine if the collection is empty.
+     */
+    public function isEmpty(): bool
+    {
+        return empty($this->items());
+    }
+
+    /**
+     * Determine if the collection is not empty.
+     */
+    public function isNotEmpty(): bool
+    {
+        return ! $this->isEmpty();
+    }
+
+    /**
+     * Flush all items in the collection.
+     */
+    public function flush(): void
+    {
+        $this->items = [];
     }
 }
