@@ -5,6 +5,7 @@ namespace Enlightener\Cors;
 use Enlightener\Cors\CorsService;
 use Enlightener\Cors\CorsRegistrar;
 use Enlightener\Cors\CorsCollection;
+use Enlightener\Cors\CorsDispatcher;
 
 class CorsManager
 {
@@ -44,5 +45,15 @@ class CorsManager
     public function collection(): CorsCollection
     {
         return $this->collection;
+    }
+
+    /**
+     * Dynamically handle calls into the cors manager instance.
+     */
+    public function __call(string $method, array $parameters): mixed
+    {
+        if ($method == 'handle') {
+            return (new CorsDispatcher)->handle(...$parameters);
+        }
     }
 }
