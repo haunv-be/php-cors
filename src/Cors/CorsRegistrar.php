@@ -16,40 +16,11 @@ class CorsRegistrar
     protected $corsManager;
 
     /**
-     * The methods that can be set through this class.
-     *
-     * @var array
-     */
-    protected $methods = [
-        'headers' => 'setAllowedHeaders',
-        'methods' => 'setAllowedMethods',
-        'credentials' => 'setAllowedCredentials',
-        'exposedHeaders' => 'setExposedHeaders',
-        'maxAge' => 'setMaxAge'
-    ];
-
-    /**
      * Create a new cors registrar instance.
      */
     public function __construct(CorsManager $corsManager)
     {
         $this->corsManager = $corsManager;
-    }
-
-    /**
-     * Get the method name of the cors service instance with the given key.
-     */
-    protected function method(string $key): string
-    {
-        return $this->methods[$key];
-    }
-
-    /**
-     * Determine if the method name exists with the given key.
-     */
-    protected function hasMethod(string $key): bool
-    {
-        return isset($this->methods[$key]);
     }
 
     /**
@@ -61,26 +32,52 @@ class CorsRegistrar
     }
 
     /**
-     * Forward call to the cors service instance.
+     * Set "allowed credentials" with the given value.
      */
-    protected function forwardCallToCorsService(string $method, array|bool|string|int $value): self
+    public function credentials(bool $value): self
     {
-        $this->current()->{$this->method($method)}($value);
+        $this->current()->setAllowedCredentials($value);
 
         return $this;
     }
 
     /**
-     * Dynamically handled calls into the cors registrar instance.
+     * Set "allowed headers" with the given value.
      */
-    public function __call(string $method, array $parameters): self
+    public function headers(array|string $headers): self
     {
-        if ($this->hasMethod($method)) {
-            return $this->forwardCallToCorsService($method, ...$parameters);
-        }
+        $this->current()->setAllowedHeaders($headers);
 
-        throw new BadMethodCallException(sprintf(
-            'Method %s::%s does not exist.', static::class, $method
-        ));
+        return $this;
+    }
+
+    /**
+     * Set "allowed methods" with the given value.
+     */
+    public function methods(array|string $methods): self
+    {
+        $this->current()->setAllowedMethods($methods);
+
+        return $this;
+    }
+
+    /**
+     * Set "exposed headers" with the given value.
+     */
+    public function exposedHeaders(array|string $headers): self
+    {
+        $this->current()->setExposedHeaders($headers);
+
+        return $this;
+    }
+
+    /**
+     * Set "max age" with the given seconds.
+     */
+    public function maxAge(int $seconds): self
+    {
+        $this->current()->setMaxAge($seconds);
+
+        return $this;
     }
 }
