@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use Enlightener\Cors\HttpRequest;
 use Enlightener\Cors\HttpResponse;
 use Enlightener\Cors\Middleware\Cors;
+use Enlightener\Cors\Exception\MethodNotAllowedException;
 
 class CorsTest extends TestCase
 {
@@ -19,7 +20,7 @@ class CorsTest extends TestCase
         $request = (new Browser)
                     ->createPreflightRequest([
                         HttpRequest::ORIGIN => 'https://php.net',
-                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'X-Header-One',
+                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'x-header-one',
                         HttpRequest::ACCESS_CONTROL_REQUEST_METHOD => 'GET'
                     ]);
 
@@ -52,7 +53,7 @@ class CorsTest extends TestCase
         $request = (new Browser)
                     ->createPreflightRequest([
                         HttpRequest::ORIGIN => 'https://php.net',
-                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'X-Header-One',
+                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'x-header-one',
                         HttpRequest::ACCESS_CONTROL_REQUEST_METHOD => 'GET'
                     ]);
 
@@ -95,7 +96,7 @@ class CorsTest extends TestCase
         $request = (new Browser)
                     ->createPreflightRequest([
                         HttpRequest::ORIGIN => 'https://php.net',
-                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'X-Header-One',
+                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'x-header-one',
                         HttpRequest::ACCESS_CONTROL_REQUEST_METHOD => 'GET'
                     ]);
 
@@ -135,10 +136,12 @@ class CorsTest extends TestCase
      */
     public function testValuesArrayWithNotAllowedPreflightRequest(): void
     {
+        $this->expectException(MethodNotAllowedException::class);
+        
         $request = (new Browser)
                     ->createPreflightRequest([
                         HttpRequest::ORIGIN => 'https://example.com',
-                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'X-Header-Four, X-Header-Five',
+                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'x-header-four,x-header-five',
                         HttpRequest::ACCESS_CONTROL_REQUEST_METHOD => 'PUT'
                     ]);
 
@@ -174,9 +177,7 @@ class CorsTest extends TestCase
     {
         $request = (new Browser)
                     ->createRequest()
-                    ->addHeaders([
-                        HttpRequest::ORIGIN => 'https://php.net'
-                    ])
+                    ->addHeaders([HttpRequest::ORIGIN => 'https://php.net'])
                     ->getRequest();
 
         $response = (new Cors([
