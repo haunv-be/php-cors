@@ -9,6 +9,7 @@ use Enlightener\Cors\CorsService;
 use Enlightener\Cors\HttpRequest;
 use Enlightener\Cors\HttpResponse;
 use Enlightener\Test\Cors\Browser;
+use Enlightener\Cors\Exception\MethodNotAllowedException;
 
 class CorsServiceTest extends TestCase
 {
@@ -20,7 +21,7 @@ class CorsServiceTest extends TestCase
         $request = (new Browser)
                     ->createPreflightRequest([
                         HttpRequest::ORIGIN => 'https://example.com',
-                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'X-Header-One',
+                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'x-header-one',
                         HttpRequest::ACCESS_CONTROL_REQUEST_METHOD => 'GET'
                     ]);
 
@@ -37,7 +38,7 @@ class CorsServiceTest extends TestCase
     {
         $request = (new Browser)
                     ->createPreflightRequest([
-                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'X-Header-One',
+                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'x-header-one',
                     ]);
 
         $corsService = (new CorsService)
@@ -66,7 +67,7 @@ class CorsServiceTest extends TestCase
     {
         $request = (new Browser)
                     ->createPreflightRequest([
-                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'X-Header-One, X-Header-Two',
+                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'x-header-one,x-header-two',
                     ]);
 
         $corsService = (new CorsService)
@@ -97,7 +98,7 @@ class CorsServiceTest extends TestCase
     {
         $request = (new Browser)
                     ->createPreflightRequest([
-                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'X-Header-One, X-Header-Two',
+                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'x-header-one,x-header-two',
                     ]);
 
         $corsService = (new CorsService)
@@ -128,13 +129,13 @@ class CorsServiceTest extends TestCase
     {
         $request = (new Browser)
                     ->createPreflightRequest([
-                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'X-Header-Four, X-Header-Five',
+                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'x-header-one,x-header-two',
                     ]);
 
         $corsService = (new CorsService)
                         ->setRequest($request)
                         ->setResponse(new Response)
-                        ->setAllowedHeaders(['X-Header-One', 'X-Header-Two', 'X-Header-Three'])
+                        ->setAllowedHeaders(['X-Header-Four', 'X-Header-Five', 'X-Header-Six'])
                         ->configureAllowedHeaders();
 
         $this->assertNull($corsService->response()->varyHeader());
@@ -241,6 +242,8 @@ class CorsServiceTest extends TestCase
      */
     public function testConfigureAllowedMethodsWithValuesArrayInRequestMethodNotAllowed(): void
     {
+        $this->expectException(MethodNotAllowedException::class);
+        
         $request = (new Browser)
                     ->createPreflightRequest([
                         HttpRequest::ACCESS_CONTROL_REQUEST_METHOD => 'PUT',
