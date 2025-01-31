@@ -3,15 +3,30 @@
 namespace Enlightener\Cors;
 
 use Closure;
-use Enlightener\Cors\Cors;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Enlightener\Cors\CorsManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Enlightener\Cors\Middleware\Cors as Middleware;
 
 class CorsDispatcher
 {
+    /**
+     * The cors manager instance.
+     *
+     * @var CorsManager
+     */
+    protected $manager;
+
+    /**
+     * Create a new cors dispatcher instance.
+     */
+    public function __construct(CorsManager $manager)
+    {
+        $this->manager = $manager;
+    }
+
     /**
      * Handle an incoming request.
      */
@@ -24,7 +39,7 @@ class CorsDispatcher
         // If exactly, we get the cors service instance in the collection and
         // setting it into middleware.
         if (! is_null($origin = $request->headers->get(HttpRequest::ORIGIN)) &&
-            ! is_null($instance = Cors::collection()->get($origin))) {
+            ! is_null($instance = $this->manager->collection()->get($origin))) {
             $middleware->setCorsService($instance);
         }
         
