@@ -173,7 +173,7 @@ class CorsService
      */
     public function setAllowedHeaders(array|string $headers): self
     {
-        $headers = Utils::arrayWrap($headers);
+        $headers = Utils::arrayWrap($headers, 'strtolower');
 
         $this->allowedHeaders = in_array('*', $headers) ? true : $headers;
 
@@ -228,7 +228,7 @@ class CorsService
      */
     public function setAllowedMethods(array|string $methods): self
     {
-        $methods = Utils::arrayWrap($methods);
+        $methods = Utils::arrayWrap($methods, 'strtoupper');
 
         $this->allowedMethods = in_array('*', $methods) ? true : $methods;
 
