@@ -2,6 +2,7 @@
 
 namespace Enlightener\Cors;
 
+use BadMethodCallException;
 use Enlightener\Cors\CorsService;
 use Enlightener\Cors\CorsRegistrar;
 use Enlightener\Cors\CorsCollection;
@@ -17,11 +18,19 @@ class CorsManager
     protected $collection;
 
     /**
+     * The cors dispatcher instance.
+     *
+     * @var CorsDispatcher
+     */
+    protected $dispatcher;
+
+    /**
      * Create a new cors manager instance.
      */
     public function __construct()
     {
         $this->collection = new CorsCollection;
+        $this->dispatcher = new CorsDispatcher($this);
     }
 
     /**
@@ -48,12 +57,24 @@ class CorsManager
     }
 
     /**
+     * Get the cors dispatcher instance.
+     */
+    public function dispatcher(): CorsDispatcher
+    {
+        return $this->dispatcher;
+    }
+
+    /**
      * Dynamically handle calls into the cors manager instance.
      */
     public function __call(string $method, array $parameters): mixed
     {
         if ($method == 'handle') {
-            return (new CorsDispatcher)->handle(...$parameters);
+            return $this->dispatcher->handle(...$parameters);
         }
+
+        throw new BadMethodCallException(sprintf(
+            'Method %s::%s does not exist.', static::class, $method
+        ));
     }
 }
