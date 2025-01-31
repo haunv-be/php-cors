@@ -8,14 +8,16 @@ use PHPUnit\Framework\TestCase;
 use Enlightener\Cors\HttpRequest;
 use Enlightener\Cors\HttpResponse;
 use Enlightener\Cors\Middleware\Cors;
+use Enlightener\Cors\Exception\HeaderNotAllowedException;
 use Enlightener\Cors\Exception\MethodNotAllowedException;
+use Enlightener\Cors\Exception\OriginNotAllowedException;
 
 class CorsTest extends TestCase
 {
     /**
-     * Test the wildcard value with a preflight request.
+     * Test with the wildcard value.
      */
-    public function testWildcardWithPreflightRequest(): void
+    public function testWithWildcard(): void
     {
         $request = (new Browser)
                     ->createPreflightRequest([
@@ -46,9 +48,9 @@ class CorsTest extends TestCase
     }
 
     /**
-     * Test values string with a preflight request.
+     * Test with the given values string.
      */
-    public function testValuesStringWithPreflightRequest(): void
+    public function testWithValuesString(): void
     {
         $request = (new Browser)
                     ->createPreflightRequest([
@@ -89,9 +91,9 @@ class CorsTest extends TestCase
     }
 
     /**
-     * Test values array with a preflight request.
+     * Test with the given values array.
      */
-    public function testValuesArrayWithPreflightRequest(): void
+    public function testWithValuesArray(): void
     {
         $request = (new Browser)
                     ->createPreflightRequest([
@@ -132,37 +134,49 @@ class CorsTest extends TestCase
     }
 
     /**
-     * Test values array with a not allowed preflight request.
+     * Test with the header values not allowed.
      */
-    public function testValuesArrayWithNotAllowedPreflightRequest(): void
+    public function testWithHeadersNotAllowed(): void
+    {
+        $this->expectException(HeaderNotAllowedException::class);
+        
+        $request = (new Browser)
+                    ->createPreflightRequest([
+                        HttpRequest::ORIGIN => 'https://example.com',
+                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'x-header-one,x-header-two',
+                        HttpRequest::ACCESS_CONTROL_REQUEST_METHOD => 'GET'
+                    ]);
+
+        $response = (new Cors([
+                        'allowedHeaders' => ['x-header-four', 'x-header-five', 'x-header-six']
+                    ]))->handle($request, function($request) {
+                        return new Response;
+                    });
+
+        $this->assertNotEquals(
+            $request->headers->get(HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS),
+            $response->headers->get(HttpResponse::ACCESS_CONTROL_ALLOW_HEADERS)
+        );
+    }
+
+    /**
+     * Test with the method value not allowed.
+     */
+    public function testWithMethodNotAllowed(): void
     {
         $this->expectException(MethodNotAllowedException::class);
         
         $request = (new Browser)
                     ->createPreflightRequest([
                         HttpRequest::ORIGIN => 'https://example.com',
-                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'x-header-four,x-header-five',
+                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'x-header-one,x-header-two',
                         HttpRequest::ACCESS_CONTROL_REQUEST_METHOD => 'PUT'
                     ]);
 
-        $response = (new Cors([
-                        'allowedOrigins' => ['https://php.net', 'https://laravel.com', 'https://symfony.com'],
-                        'allowedMethods' => ['GET', 'HEAD', 'POST'],
-                        'allowedHeaders' => ['X-Header-One', 'X-Header-Two', 'X-Header-Three'],
-                    ]))
+        $response = (new Cors(['allowedMethods' => ['GET', 'HEAD', 'POST']]))
                     ->handle($request, function($request) {
                         return new Response;
                     });
-
-        $this->assertNotEquals(
-            $request->headers->get(HttpRequest::ORIGIN),
-            $response->headers->get(HttpResponse::ACCESS_CONTROL_ALLOW_ORIGIN)
-        );
-
-        $this->assertNotEquals(
-            $request->headers->get(HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS),
-            $response->headers->get(HttpResponse::ACCESS_CONTROL_ALLOW_HEADERS)
-        );
 
         $this->assertNotEquals(
             $request->headers->get(HttpRequest::ACCESS_CONTROL_REQUEST_METHOD),
@@ -171,9 +185,35 @@ class CorsTest extends TestCase
     }
 
     /**
-     * Test values array with an actual request.
+     * Test with the origin value not allowed.
      */
-    public function testValuesArrayWithActualRequest(): void
+    public function testWithOriginNotAllowed(): void
+    {
+        $this->expectException(OriginNotAllowedException::class);
+        
+        $request = (new Browser)
+                    ->createPreflightRequest([
+                        HttpRequest::ORIGIN => 'https://example.com',
+                        HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'x-header-one,x-header-two',
+                        HttpRequest::ACCESS_CONTROL_REQUEST_METHOD => 'GET'
+                    ]);
+
+        $response = (new Cors([
+                        'allowedOrigins' => ['https://php.net', 'https://laravel.com', 'https://symfony.com']
+                    ]))->handle($request, function($request) {
+                        return new Response;
+                    });
+
+        $this->assertNotEquals(
+            $request->headers->get(HttpRequest::ORIGIN),
+            $response->headers->get(HttpResponse::ACCESS_CONTROL_ALLOW_ORIGIN)
+        );
+    }
+
+    /**
+     * Test with the actual request.
+     */
+    public function testCorsWithActualRequest(): void
     {
         $request = (new Browser)
                     ->createRequest()
