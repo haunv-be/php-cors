@@ -9,7 +9,9 @@ use Enlightener\Cors\HttpRequest;
 use Illuminate\Http\JsonResponse;
 use Enlightener\Cors\HttpResponse;
 use Illuminate\Http\RedirectResponse;
+use Enlightener\Cors\Exception\HeaderNotAllowedException;
 use Enlightener\Cors\Exception\MethodNotAllowedException;
+use Enlightener\Cors\Exception\OriginNotAllowedException;
 
 class CorsService
 {
@@ -192,6 +194,8 @@ class CorsService
 
     /**
      * Configure the "allowed headers" value onto the response.
+     * 
+     * @throws HeaderNotAllowedException
      */
     public function configureAllowedHeaders(): self
     { 
@@ -210,9 +214,13 @@ class CorsService
             $this->response->setAccessControlAllowHeaders(
                 $this->request->accessControlRequestHeaders()
             );
+
+            return $this;
         }
 
-        return $this;
+        throw new HeaderNotAllowedException(
+            "The incoming request headers such as [{$this->request->accessControlRequestHeaders()}] are not allowed."
+        );
     }
 
     /**
@@ -247,6 +255,8 @@ class CorsService
 
     /**
      * Configure the "allowed methods" value onto the response.
+     * 
+     * @throws MethodNotAllowedException
      */
     public function configureAllowedMethods(): self
     {
@@ -269,7 +279,7 @@ class CorsService
         }
 
         throw new MethodNotAllowedException(
-            "[{$this->request->accessControlRequestMethod()}] method not allowed."
+            "The incoming request [{$this->request->accessControlRequestMethod()}] method is not allowed."
         );
     }
 
@@ -375,6 +385,8 @@ class CorsService
 
     /**
      * Configure the "allowed origins" value onto the response.
+     * 
+     * @throws OriginNotAllowedException
      */
     public function configureAllowedOrigins(): self
     {
@@ -384,9 +396,13 @@ class CorsService
             $this->response->setAccessControlAllowOrigin(
                 $this->request->origin()
             );
+
+            return $this;
         }
 
-        return $this;
+        throw new OriginNotAllowedException(
+            "The incoming request [{$this->request->origin()}] origin is not allowed."
+        );
     }
 
     /**
