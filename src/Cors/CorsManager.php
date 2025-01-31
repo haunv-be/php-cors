@@ -38,14 +38,62 @@ class CorsManager
      */
     public function origins(array|string $origins): CorsRegistrar
     {    
+        $this->addToCollections($origins);
+
+        return $this->createCorsRegistrar();
+    }
+
+    /**
+     * Register a cors service instance to the collection with the given options.
+     */
+    public function register(array $options = []): void
+    {
+        $origins = '*';
+
+        if (isset($options['origins'])) {
+            $origins = $options['origins'];
+        }
+
+        $this->addToCollections($origins);
+
+        unset($options['origins']);
+
+        $registrar = $this->createCorsRegistrar();
+
+        if (! empty($options)) {
+            foreach ($options as $method => $value) {
+                $registrar->{$method}($value);
+            }
+        }
+    }
+
+    /**
+     * Add a cors service instance to the collection with the given value.
+     */
+    protected function addToCollections(array|string $origins): void
+    {
         $this->collection->add(
-            (new CorsService)
+            $this->createCorsService($origins)
+        );
+    }
+
+    /**
+     * Create a new cors registrar instance.
+     */
+    protected function createCorsRegistrar(): CorsRegistrar
+    {
+        return new CorsRegistrar($this);
+    }
+
+    /**
+     * Create a new cors service instance.
+     */
+    protected function createCorsService(array|string $origins): CorsService
+    {
+        return (new CorsService)
                 ->setAllowedOrigins($origins)
                 ->setAllowedHeaders('*')
-                ->setAllowedMethods('*')
-        );
-
-        return new CorsRegistrar($this);
+                ->setAllowedMethods('*');
     }
 
     /**
