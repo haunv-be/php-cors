@@ -9,7 +9,9 @@ use Enlightener\Cors\CorsService;
 use Enlightener\Cors\HttpRequest;
 use Enlightener\Cors\HttpResponse;
 use Enlightener\Test\Cors\Browser;
+use Enlightener\Cors\Exception\HeaderNotAllowedException;
 use Enlightener\Cors\Exception\MethodNotAllowedException;
+use Enlightener\Cors\Exception\OriginNotAllowedException;
 
 class CorsServiceTest extends TestCase
 {
@@ -127,6 +129,8 @@ class CorsServiceTest extends TestCase
      */
     public function testConfigureAllowedHeadersWithValuesArrayInquestHeadersNotAllowed(): void
     {
+        $this->expectException(HeaderNotAllowedException::class);
+
         $request = (new Browser)
                     ->createPreflightRequest([
                         HttpRequest::ACCESS_CONTROL_REQUEST_HEADERS => 'x-header-one,x-header-two',
@@ -415,6 +419,8 @@ class CorsServiceTest extends TestCase
      */
     public function testConfigureAllowedOriginsWithValuesArrayInRequestOriginNotAllowed(): void
     {
+        $this->expectException(OriginNotAllowedException::class);
+
         $request = (new Browser)
                     ->createPreflightRequest([
                         HttpRequest::ORIGIN => 'https://example.com',
