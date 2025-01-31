@@ -7,19 +7,23 @@ class Utils
     /**
      * Wrap to an array with the given value.
      */
-    public static function arrayWrap(array|string|null $value): array
+    public static function arrayWrap(array|string|null $value, ?callable $callback = null): array
     {
         if (is_null($value)) {
             return [];
         }
+        
+        if (is_array($value)) {
+            return array_map($callback, $value);
+        }
 
-        return is_array($value) ? $value : static::arraySplit(',', $value);
+        return static::arraySplit(',', $value, $callback);
     }
 
     /**
      * Split a string by a string.
      */
-    public static function arraySplit(string $delimiter, string $string): array
+    public static function arraySplit(string $delimiter, string $string, ?callable $callback = null): array
     {
         $array = [];
 
@@ -32,7 +36,7 @@ class Utils
                 continue;
             }
 
-            $array[] = $value;
+            $array[] = is_callable($callback) ? $callback($value) : $value;
         }
 
         return $array;
