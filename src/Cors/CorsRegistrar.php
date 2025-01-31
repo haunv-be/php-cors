@@ -13,14 +13,14 @@ class CorsRegistrar
      *
      * @var CorsManager
      */
-    protected $corsManager;
+    protected $manager;
 
     /**
      * Create a new cors registrar instance.
      */
-    public function __construct(CorsManager $corsManager)
+    public function __construct(CorsManager $manager)
     {
-        $this->corsManager = $corsManager;
+        $this->manager = $manager;
     }
 
     /**
@@ -28,7 +28,7 @@ class CorsRegistrar
      */
     protected function current(): CorsService
     {
-        return $this->corsManager->collection()->last();
+        return $this->manager->collection()->last();
     }
 
     /**
