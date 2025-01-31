@@ -1,0 +1,64 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - main
+    pull_request:
+    schedule:
+      - cron: '0 0 * * *'
+
+jobs:
+  php_cors:
+    runs-on: ubuntu-20.04
+    
+    strategy:
+      matrix:
+        php: [7.4, 8.0, 8.1, 8.2, 8.3]
+        phpunit: [9.6]
+        laravel: [^6, ^7, ^8, ^9, ^10]
+        dependency-version: [prefer-lowest, prefer-stable, dev]
+        exclude:
+          - php: 8.1
+          - php: 8.2
+          - php: 8.3
+            laravel: ^6
+          
+          - php: 8.1
+          - php: 8.2
+          - php: 8.3
+            laravel: ^7
+
+          - php: 8.2
+          - php: 8.3
+            laravel: ^8
+
+          - php: 7.4
+            laravel: ^9
+
+          - php: 7.4
+          - php: 8.0
+            laravel: ^10
+
+    name: PHP ${{ matrix.php }} - Laravel ${{ matrix.laravel }} - Dependency Version ${{ matrix.dependency-version }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php }}
+        coverage: none
+        tools: composer:v2
+        ini-values: error_reporting=E_ALL
+      
+    - name: Install dependencies
+      run: |
+        composer require "laravel/framework:${{ matrix.laravel }}" --no-interaction --no-update
+        composer require phpunit/phpunit:^${{ matrix.phpunit }} --dev --no-interaction --no-update
+        composer update --${{ matrix.dependency-version }} --prefer-dist --no-progress
+
+    - name: Execute tests
+      run: vendor/bin/phpunit --verbose
