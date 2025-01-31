@@ -34,18 +34,32 @@ class CorsManagerTest extends TestCase
                 ->exposedHeaders('X-Header-One, X-Header-Two, X-Header-Three')
                 ->maxAge(100);
 
-        Cors::origins(['https://php.net', 'https://phpunit.de', 'https://example.com'])
+        Cors::origins(['https://php.net', 'https://phpunit.de'])
                 ->headers(['X-Header-One', 'X-Header-Two', 'X-Header-Three', 'X-Header-Four', 'X-Header-Five'])
                 ->methods(['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'])
                 ->credentials(true)
                 ->exposedHeaders(['X-Header-One', 'X-Header-Two', 'X-Header-Three', 'X-Header-Four', 'X-Header-Five'])
                 ->maxAge(100);
+
+        Cors::register([
+            'origins' => 'https://test.com, https://example.com',
+            'headers' => 'X-Header-One, X-Header-Two, X-Header-Three',
+            'methods' => 'GET, HEAD, POST, PUT',
+            'credentials' => true,
+            'exposedHeaders' => 'X-Header-One, X-Header-Two, X-Header-Three',
+            'maxAge' => 100
+        ]);
                 
-        $this->assertSame(Cors::collection()->count(), 5);
+        $this->assertSame(Cors::collection()->count(), 6);
 
         $this->assertSame(
             Cors::collection()->get('https://php.net')->allowedHeaders(),
-            ['X-Header-One', 'X-Header-Two', 'X-Header-Three', 'X-Header-Four', 'X-Header-Five']
+            ['x-header-one', 'x-header-two', 'x-header-three', 'x-header-four', 'x-header-five']
+        );
+
+        $this->assertSame(
+            Cors::collection()->get('https://test.com')->allowedMethods(),
+            ['GET', 'HEAD', 'POST', 'PUT']
         );
     }
 
