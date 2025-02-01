@@ -48,7 +48,7 @@ class CorsCollection
      */
     public function get(string $key): ?CorsService
     {
-        return $this->items[$key];
+        return $this->items[$key] ?? null;
     }
 
     /**
@@ -56,7 +56,7 @@ class CorsCollection
      */
     public function set(string $key, CorsService $corsService): void
     {
-        $this->unset($key);
+        $this->remove($key);
 
         $this->items[$key] = $corsService;
     }
@@ -80,7 +80,7 @@ class CorsCollection
     /**
      * Remove an item in the collection with the given origin.
      */
-    public function unset(string $key): void
+    public function remove(string $key): void
     {
         if ($this->has($key)) {
             unset($this->items[$key]);
