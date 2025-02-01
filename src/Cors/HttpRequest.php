@@ -108,15 +108,6 @@ class HttpRequest
     }
 
     /**
-     * Determine if the incoming request is the same host.
-     */
-    public function isSameHost(): bool
-    {
-        return is_null($this->origin()) ||
-               rtrim(env('APP_URL'), '/') === $this->request->getSchemeAndHttpHost();
-    }
-
-    /**
      * Dynamically retrieve attributes on the request decorator instance.
      */
     public function __get(string $key): mixed
