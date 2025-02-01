@@ -7,6 +7,7 @@ use Illuminate\Http\Response;
 use PHPUnit\Framework\TestCase;
 use Enlightener\Cors\HttpRequest;
 use Enlightener\Cors\HttpResponse;
+use Enlightener\Test\Cors\Browser;
 use Enlightener\Cors\Middleware\Cors;
 use Enlightener\Cors\Exception\HeaderNotAllowedException;
 use Enlightener\Cors\Exception\MethodNotAllowedException;
