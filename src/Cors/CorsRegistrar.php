@@ -26,7 +26,7 @@ class CorsRegistrar
     /**
      * Get the current cors service instance.
      */
-    protected function current(): CorsService
+    public function current(): CorsService
     {
         return $this->manager->collection()->last();
     }
