@@ -67,4 +67,20 @@ class Utils
     {
         return ! static::strContains($string, $value);
     }
+
+    /**
+     * Get a random string with the given length.
+     */
+    public static function strRandom(int $length): string
+    {
+        $characters = 'abcdefghijklmnopqrstuvwxyz';
+
+        $string = '';
+
+        for ($index = 0; $index < $length; $index++) {
+            $string .= $characters[rand(0, strlen($characters) - 1)];
+        }
+
+        return $string;
+    }
 }
