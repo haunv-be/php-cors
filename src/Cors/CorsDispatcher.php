@@ -38,8 +38,9 @@ class CorsDispatcher
         // matches the "origin" value in the collection.
         // If exactly, we get the cors service instance in the collection and
         // setting it into middleware.
-        if (! is_null($origin = $request->headers->get(HttpRequest::ORIGIN)) &&
-            ! is_null($instance = $this->manager->collection()->get($origin))) {
+        $origin = $request->headers->get(HttpRequest::ORIGIN) ?? '*';
+
+        if (! is_null($instance = $this->manager->collection()->get($origin))) {
             $middleware->setCorsService($instance);
         }
         
