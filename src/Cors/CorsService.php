@@ -155,9 +155,9 @@ class CorsService
      */
     public function configureAllowedCredentials(): self
     {
-        $this->response->setAccessControlAllowCredentials(
-            $this->hasCredentials() ? 'true' : 'false'
-        );
+        if ($this->hasCredentials()) {
+            $this->response->setAccessControlAllowCredentials('true');
+        }
 
         return $this;
     }
