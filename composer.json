@@ -1,6 +1,6 @@
 {
     "name": "enlightener/php-cors",
-    "description": "Enlightener PHP CORS (Cross-Origin Resource Sharing) is a small library supported to prevent attacks from a cross-origin request",
+    "description": "Enlightener PHP CORS (Cross-Origin Resource Sharing) is a small library support to prevent attacks from a cross-origin request",
     "keywords": ["cors", "php", "laravel", "symfony"],
     "homepage": "https://github.com/haunv-be/php-cors",
     "type": "library",
@@ -26,7 +26,7 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^9.6",
-        "laravel/framework": "^7|^8|^9"
+        "laravel/framework": "6^|^7|^8|^9|^10"
     },
     "minimum-stability": "dev"
 }
