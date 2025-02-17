@@ -2,6 +2,9 @@
 
 namespace Enlightener\Cors;
 
+use Closure;
+use Enlightener\Cors\CorsService;
+
 class Utils
 { 
     /**
@@ -82,5 +85,49 @@ class Utils
         }
 
         return $string;
+    }
+
+    /**
+     * Determine if the given subject(origin) value matches with any origin in the collection.
+     */
+    public static function match(array|string $items, string $subject, Closure $callback): bool|null|CorsService
+    {
+        $items = is_array($items) ? $items : [$items];
+
+        $subjects = static::arraySplit('.', $subject);
+
+        foreach ($items as $key => $value) {
+            $segments = static::arraySplit(
+                '.', is_string($key) ? $key : $value
+            );
+
+            if ($segments[0] === '*') {
+                unset($segments[0]);
+            }
+
+            if (count($subjects) === 2) {
+                unset($segments[1]);
+            }
+
+            $array = [];
+
+            foreach ($subjects as $segment) {
+                if (in_array($segment, $segments)) {
+                    break;
+                }
+
+                $array[] = $segment;
+            }
+
+            $schemeAndHttpHost = implode(
+                '.', array_merge($array, $segments)
+            );
+    
+            if ($schemeAndHttpHost === $subject) {
+                return $callback(true, $value);
+            }
+        }
+
+        return $callback(false, null);
     }
 }

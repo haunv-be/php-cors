@@ -2,6 +2,8 @@
 
 namespace Enlightener\Cors;
 
+use Closure;
+use Enlightener\Cors\Utils;
 use Enlightener\Cors\CorsService;
 
 class CorsCollection
@@ -32,7 +34,13 @@ class CorsCollection
      */
     public function has(string $key): bool
     {
-        return isset($this->items[$key]);
+        if (isset($this->items[$key])) {
+            return true;
+        }
+
+        return Utils::match($this->items(), $key, function($matched) {
+            return $matched;
+        });
     }
 
     /**
@@ -48,7 +56,13 @@ class CorsCollection
      */
     public function get(string $key): ?CorsService
     {
-        return $this->items[$key] ?? null;
+        if (isset($this->items[$key])) {
+            return $this->items[$key];
+        }
+
+        return Utils::match($this->items(), $key, function($matched, $instance) {
+            return $instance;
+        });
     }
 
     /**

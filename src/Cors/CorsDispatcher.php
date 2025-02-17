@@ -7,6 +7,7 @@ use Enlightener\Cors\Utils;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Enlightener\Cors\CorsManager;
+use Enlightener\Cors\HttpRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Enlightener\Cors\Middleware\Cors as Middleware;
@@ -77,10 +78,8 @@ class CorsDispatcher
     {
         $origin = $request->headers->get(HttpRequest::ORIGIN);
 
-        $schemeAndHttpHost = $request->getSchemeAndHttpHost();
-
-        return is_null($origin) ||
-               $origin === $schemeAndHttpHost;
+        return $origin === null ||
+               $origin === $request->getSchemeAndHttpHost() ||
                $origin === rtrim(env('APP_URL') ?? '', '/');
     }
 

@@ -2,13 +2,14 @@
 
 namespace Enlightener\Test\Cors;
 
+use Enlightener\Cors\Cors;
 use Enlightener\Cors\Utils;
 use PHPUnit\Framework\TestCase;
 
 class UtilsTest extends TestCase
 {
     /**
-     * Test utils function of array wrap with the given arguments.
+     * Test "arrayWrap" with the given arguments.
      */
     public function testArrayWrapWithArguments(): void
     {
@@ -28,12 +29,34 @@ class UtilsTest extends TestCase
     }
 
     /**
-     * Test utils function of string contains with the given arguments.
+     * Test "strContains" function with the given arguments.
      */
     public function testStringContainsWithArguments(): void
     {
         $this->assertTrue(Utils::strContains('get, head, post', 'head'));
         $this->assertTrue(Utils::strContains(['get', 'head', 'post'], 'head'));
         $this->assertFalse(Utils::strNotContains(['get', 'head', 'post'], 'head'));
+    }
+
+    /**
+     * Test "match" function with the given arguments.
+     */
+    public function testMatchWithArguments(): void
+    {
+        Cors::origins('*.example.com');
+
+        $items = Cors::collection()->items();
+
+        $this->assertTrue(Utils::match($items, 'https://example.com', function($matched) {
+            return $matched;
+        }));
+
+        $this->assertTrue(Utils::match($items, 'https://api.example.com', function($matched) {
+            return $matched;
+        }));
+
+        $this->assertFalse(Utils::match($items, 'https://api.example.com.vn', function($matched) {
+            return $matched;
+        }));
     }
 }

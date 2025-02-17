@@ -83,4 +83,25 @@ class CorsManagerTest extends TestCase
             'https://php.net', $response->headers->get(HttpResponse::ACCESS_CONTROL_ALLOW_ORIGIN)
         );
     }
+
+    /**
+     * Test the "handle" method of cors dispatcher instance with the wildcard value.
+     */
+    public function testHandleMethodOfCorsDispatcherInstanceWithWildcard(): void
+    {
+        $request = (new Browser)
+                    ->createRequest()
+                    ->addHeaders([HttpRequest::ORIGIN => 'https://api.example.com'])
+                    ->getRequest();
+
+        Cors::origins('*.example.com');
+
+        $response = Cors::handle($request, function() {
+            return new Response;
+        });
+
+        $this->assertSame(
+            'https://api.example.com', $response->headers->get(HttpResponse::ACCESS_CONTROL_ALLOW_ORIGIN)
+        );
+    }
 }

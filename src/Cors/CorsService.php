@@ -218,9 +218,10 @@ class CorsService
             return $this;
         }
 
-        throw new HeaderNotAllowedException(
-            "The incoming request headers such as [{$this->request->accessControlRequestHeaders()}] are not allowed."
-        );
+        throw new HeaderNotAllowedException(sprintf(
+            'The incoming request with headers [%s] from the origin [%s] is not allowed. Allowed headers: [%s].',
+            $this->request->accessControlRequestHeaders(), $this->request->origin(), implode(', ', $this->allowedHeaders())
+        ));
     }
 
     /**
@@ -278,9 +279,10 @@ class CorsService
             return $this;
         }
 
-        throw new MethodNotAllowedException(
-            "The incoming request [{$this->request->accessControlRequestMethod()}] method is not allowed."
-        );
+        throw new MethodNotAllowedException(sprintf(
+            'The incoming request with method [%s] from the origin [%s] is not allowed. Allowed methods: [%s].',
+            $this->request->accessControlRequestMethod(), $this->request->origin(), implode(', ', $this->allowedMethods())
+        ));
     }
 
     /**
@@ -380,7 +382,10 @@ class CorsService
     protected function hasAllowedOrigins(): bool
     {
         return $this->allowedOrigins() === true ||
-               Utils::strContains($this->allowedOrigins(), $this->request->origin());
+               Utils::strContains($this->allowedOrigins(), $this->request->origin()) ||
+               Utils::match($this->allowedOrigins(), $this->request->origin(), function($matched) {
+                    return $matched;
+               });
     }
 
     /**
@@ -401,7 +406,7 @@ class CorsService
         }
 
         throw new OriginNotAllowedException(
-            "The incoming request [{$this->request->origin()}] origin is not allowed."
+            "The incoming request from the origin [{$this->request->origin()}] is not allowed."
         );
     }
 
