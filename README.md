@@ -1,4 +1,10 @@
-## About
+## 🚀Features
+
+* Configure options for each domain.
+* Flexible about the usage way. 
+* Handle the incoming requests strictly and write exceptions log if any to easy debug.
+
+ ## About
 
 <p dir="auto">
 <a href="https://github.com/haunv-be/php-cors/actions"><img src="https://github.com/haunv-be/php-cors/workflows/tests/badge.svg" alt="Build Status"></a>
@@ -31,30 +37,36 @@ composer require enlightener/php-cors
 **Register a cors service**
 
 ```php
- // Default options
+// Default options
 Cors::origins('*');
 
-// Custom options
-Cors::origins('https://php.net, https://phpunit.de')
+// Register one service
+Cors::origins('https://php.net')
         ->headers('X-Header-One, X-Header-Two, X-Header-Three')
         ->methods('GET, HEAD, POST')
         ->credentials(false)
         ->exposedHeaders('X-Header-One, X-Header-Two, X-Header-Three')
         ->maxAge(0);
 
+// Register include wildcard in the domain
+Cors::origin('*.example.com')
+        ->headers('X-Header-One, X-Header-Two, X-Header-Three')
+        ->methods('GET, HEAD, POST');
+
+// Register many services
+Cors::origins('https://php.net, https://laravel.com')
+        ->headers('X-Header-One, X-Header-Two, X-Header-Three')
+        ->methods('GET, HEAD, POST');
+
 // or
-
-Cors::origins(['https://laravel.com', 'https://symfony.com'])
-        ->headers(['X-Header-One', 'X-Header-Two', 'X-Header-Three', 'X-Header-Four', 'X-Header-Five'])
-        ->methods(['GET', 'HEAD', 'POST', 'PUT', 'PATCH'])
-        ->credentials(false)
-        ->exposedHeaders(['X-Header-One', 'X-Header-Two', 'X-Header-Three', 'X-Header-Four', 'X-Header-Five'])
-        ->maxAge(0);
+Cors::origins(['https://php.net', 'https://laravel.com', '*.example.com'])
+        ->headers(['X-Header-One', 'X-Header-Two', 'X-Header-Three'])
+        ->methods(['GET', 'HEAD', 'POST'])
+        ->exposedHeaders(['X-Header-One', 'X-Header-Two', 'X-Header-Three']);
 
 // or
-
 Cors::register([
-    'origins' => ['https://php.net', 'https://laravel.com', 'https://symfony.com'],
+    'origins' => ['https://php.net', 'https://laravel.com', '*.example.com'],
     'headers' => ['X-Header-One', 'X-Header-Two', 'X-Header-Three'],
     'credentials' => false,
     'exposedHeaders' => ['X-Header-One', 'X-Header-Two', 'X-Header-Three'],
@@ -65,7 +77,7 @@ Cors::register([
 Cors::collection()->items();
 
 // You can use any method that you want to meet the requirements of your project.
-// Note that to register a cors service always start with the first origins method
+// Note that to register a cors service always start with the first "origins" method
 // on each call a CORS facade instance.
 ```
 
